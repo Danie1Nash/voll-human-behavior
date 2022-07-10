@@ -1,0 +1,91 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: python src/models/train_model.py data/processed/2d/train_data.csv data/processed/2d/val_data.csv
+      models reports
+    deps:
+    - path: data/processed/2d/train_data.csv
+      md5: 4e70d80734ea6a3e739ec60c42b14444
+      size: 90847
+    - path: data/processed/2d/val_data.csv
+      md5: 6ddee532aa77dc8efa4d6e69ccddd271
+      size: 22708
+    - path: src/models/train_model.py
+      md5: 45516244292b810a9a02d1e434247ca0
+      size: 12386
+    outs:
+    - path: models/accuracy_graph.jpg
+      md5: a78e8ee3b7670271d45c66db11a3346f
+      size: 33002
+    - path: models/confusion_matrix.jpg
+      md5: 7eb35abdca56012028d0258ad5b85ba3
+      size: 62663
+    - path: models/loss_graph.jpg
+      md5: 9d9cd106780a5c99d0628702bbb557ee
+      size: 32104
+    - path: models/model.pth
+      md5: 03bd0ae199df48536f644c4459d35694
+      size: 23770241
+  detect-skeleton:
+    cmd: python src/data/make_dataset.py data/raw/videos data/raw/volleyball_tracking_annotation
+      data/interim/mmpose-result/2d 0
+    deps:
+    - path: src/data/make_dataset.py
+      md5: e3e9cf29ae51e689fa4ed47feb423133
+      size: 5086
+    outs:
+    - path: data/interim/mmpose-result/2d/data_information.csv
+      md5: 3c8e2679f073a422a6ce8e16da419368
+      size: 91909
+  build-distant-map:
+    cmd: python src/features/build_distant_map.py data/interim/mmpose-result/2d/data_information.csv
+      data/processed/2d
+    deps:
+    - path: data/interim/mmpose-result/2d/data_information.csv
+      md5: 3c8e2679f073a422a6ce8e16da419368
+      size: 91909
+    - path: src/features/build_distant_map.py
+      md5: bdebc1e517a5d08f61efe9ff6ed7786f
+      size: 2970
+    outs:
+    - path: data/processed/2d/distant_map.csv
+      md5: f114d3c9804ecc0827d6bfd069107ee3
+      size: 60881
+  build-skeleton:
+    cmd: python src/features/build_skeleton.py data/interim/mmpose-result/2d/data_information.csv
+      data/processed/2d
+    deps:
+    - path: data/interim/mmpose-result/2d/data_information.csv
+      md5: 3c8e2679f073a422a6ce8e16da419368
+      size: 91909
+    - path: src/features/build_skeleton.py
+      md5: cd62e4a61dbf0db292e8661cccb99e6b
+      size: 3641
+    outs:
+    - path: data/processed/2d/skeleton.csv
+      md5: 901c934200830a611d2e4fa7610d0125
+      size: 57305
+  split-data:
+    cmd: python src/models/split_dataset.py data/interim/mmpose-result/2d/data_information.csv
+      data/processed/2d/distant_map.csv data/processed/2d/skeleton.csv data/processed/2d
+      models
+    deps:
+    - path: data/interim/mmpose-result/2d/data_information.csv
+      md5: 3c8e2679f073a422a6ce8e16da419368
+      size: 91909
+    - path: data/processed/2d/distant_map.csv
+      md5: f114d3c9804ecc0827d6bfd069107ee3
+      size: 60881
+    - path: data/processed/2d/skeleton.csv
+      md5: 901c934200830a611d2e4fa7610d0125
+      size: 57305
+    - path: src/models/split_dataset.py
+      md5: a87613438585179c0aa6c47ac05381a2
+      size: 2623
+    outs:
+    - path: data/processed/2d/train_data.csv
+      md5: 4e70d80734ea6a3e739ec60c42b14444
+      size: 90847
+    - path: data/processed/2d/val_data.csv
+      md5: 6ddee532aa77dc8efa4d6e69ccddd271
+      size: 22708

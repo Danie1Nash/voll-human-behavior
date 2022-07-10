@@ -1,0 +1,63 @@
+stages:
+  detect-skeleton:
+    cmd: python src/data/make_dataset.py 
+                data/raw/videos
+                data/raw/volleyball_tracking_annotation
+                data/interim/mmpose-result/2d
+                0
+    deps:
+      - src/data/make_dataset.py
+    outs:
+      - data/interim/mmpose-result/2d/data_information.csv
+    
+  build-distant-map:
+    cmd: python src/features/build_distant_map.py 
+                data/interim/mmpose-result/2d/data_information.csv
+                data/processed/2d
+    deps:
+      - src/features/build_distant_map.py
+      - data/interim/mmpose-result/2d/data_information.csv
+    outs:
+      - data/processed/2d/distant_map.csv
+  
+  build-skeleton:
+    cmd: python src/features/build_skeleton.py 
+                data/interim/mmpose-result/2d/data_information.csv
+                data/processed/2d
+    deps:
+      - src/features/build_skeleton.py
+      - data/interim/mmpose-result/2d/data_information.csv
+    outs:
+      - data/processed/2d/skeleton.csv
+
+  split-data:
+    cmd: python src/models/split_dataset.py 
+                data/interim/mmpose-result/2d/data_information.csv
+                data/processed/2d/distant_map.csv
+                data/processed/2d/skeleton.csv
+                data/processed/2d
+                models
+    deps:
+      - src/models/split_dataset.py
+      - data/interim/mmpose-result/2d/data_information.csv
+      - data/processed/2d/skeleton.csv
+      - data/processed/2d/distant_map.csv
+    outs:
+      - data/processed/2d/val_data.csv
+      - data/processed/2d/train_data.csv
+    
+  train:
+    cmd: python src/models/train_model.py data/processed/2d/train_data.csv data/processed/2d/val_data.csv models reports
+    deps:
+      - src/models/train_model.py
+      - data/processed/2d/train_data.csv
+      - data/processed/2d/val_data.csv
+    outs:
+      - models/model.pth
+      - models/loss_graph.jpg
+      - models/accuracy_graph.jpg
+      - models/confusion_matrix.jpg
+
+
+
+
